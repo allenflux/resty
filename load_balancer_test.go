@@ -366,6 +366,8 @@ func TestWeightedRoundRobin(t *testing.T) {
 	})
 }
 
+// These weighted-distribution scenarios use one SRV priority group.
+// Priority selection and failover are covered by the dedicated SRV priority tests.
 func TestSRVWeightedRoundRobin(t *testing.T) {
 	t.Run("3 records with weight {50,30,20}", func(t *testing.T) {
 		srv, err := NewSRVWeightedRoundRobin("_sample-server", "", "example.com", "")
@@ -378,8 +380,8 @@ func TestSRVWeightedRoundRobin(t *testing.T) {
 		srv.lookupSRV = func() ([]*net.SRV, error) {
 			return []*net.SRV{
 				{Target: "service1.example.com.", Port: 443, Priority: 10, Weight: 50},
-				{Target: "service2.example.com.", Port: 443, Priority: 20, Weight: 30},
-				{Target: "service3.example.com.", Port: 443, Priority: 20, Weight: 20},
+				{Target: "service2.example.com.", Port: 443, Priority: 10, Weight: 30},
+				{Target: "service3.example.com.", Port: 443, Priority: 10, Weight: 20},
 			}, nil
 		}
 		err = srv.Refresh()
@@ -418,7 +420,7 @@ func TestSRVWeightedRoundRobin(t *testing.T) {
 		srv.lookupSRV = func() ([]*net.SRV, error) {
 			return []*net.SRV{
 				{Target: "service1.example.com.", Port: 443, Priority: 10, Weight: 50},
-				{Target: "service2.example.com.", Port: 443, Priority: 20, Weight: 50},
+				{Target: "service2.example.com.", Port: 443, Priority: 10, Weight: 50},
 			}, nil
 		}
 		err = srv.Refresh()
@@ -457,8 +459,8 @@ func TestSRVWeightedRoundRobin(t *testing.T) {
 		srv.lookupSRV = func() ([]*net.SRV, error) {
 			return []*net.SRV{
 				{Target: "service1.example.com.", Port: 443, Priority: 10, Weight: 60},
-				{Target: "service2.example.com.", Port: 443, Priority: 20, Weight: 20},
-				{Target: "service3.example.com.", Port: 443, Priority: 20, Weight: 20},
+				{Target: "service2.example.com.", Port: 443, Priority: 10, Weight: 20},
+				{Target: "service3.example.com.", Port: 443, Priority: 10, Weight: 20},
 			}, nil
 		}
 		err = srv.Refresh()
@@ -512,7 +514,7 @@ func TestSRVWeightedRoundRobin(t *testing.T) {
 		srv.lookupSRV = func() ([]*net.SRV, error) {
 			return []*net.SRV{
 				{Target: "service1.example.com.", Port: 443, Priority: 10, Weight: 50},
-				{Target: "service2.example.com.", Port: 443, Priority: 20, Weight: 50},
+				{Target: "service2.example.com.", Port: 443, Priority: 10, Weight: 50},
 			}, nil
 		}
 		err = srv.Refresh()

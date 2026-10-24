@@ -122,6 +122,7 @@ type Host struct {
 	//	Default value is 5
 	MaxFailures int
 
+	priority       uint16 // DNS SRV priority; ordinary weighted hosts use zero.
 	state          HostState
 	currentWeight  int
 	failedRequests int
@@ -208,10 +209,17 @@ func (wrr *WeightedRoundRobin) NextWithContext(ctx context.Context) (string, err
 	wrr.lock.Lock()
 	defer wrr.lock.Unlock()
 
+	lowestPriority := ^uint16(0)
+	for _, h := range wrr.hosts {
+		if h.state != HostStateInActive {
+			lowestPriority = min(lowestPriority, h.priority)
+		}
+	}
+
 	var best *Host
 	total := 0
 	for _, h := range wrr.hosts {
-		if h.state == HostStateInActive {
+		if h.state == HostStateInActive || h.priority != lowestPriority {
 			continue
 		}
 
@@ -476,7 +484,7 @@ func (swrr *SRVWeightedRoundRobin) Refresh() error {
 	for idx, addr := range addrs {
 		domain := strings.TrimRight(addr.Target, ".")
 		baseURL := fmt.Sprintf("%s://%s:%d", swrr.HttpScheme, domain, addr.Port)
-		hosts[idx] = &Host{BaseURL: baseURL, Weight: int(addr.Weight)}
+		hosts[idx] = &Host{BaseURL: baseURL, Weight: int(addr.Weight), priority: addr.Priority}
 	}
 
 	return swrr.wrr.Refresh(hosts...)
